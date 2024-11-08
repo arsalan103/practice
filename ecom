@@ -1,0 +1,109 @@
+// Sample product data
+const products = [
+    { id: 1, name: "Product 1", description: "Description for product 1", price: 19.99, imageUrl: "https://via.placeholder.com/150" },
+    { id: 2, name: "Product 2", description: "Description for product 2", price: 29.99, imageUrl: "https://via.placeholder.com/150" },
+    { id: 3, name: "Product 3", description: "Description for product 3", price: 39.99, imageUrl: "https://via.placeholder.com/150" }
+];
+
+// Initialize cart from local storage
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+// Function to update cart count on the page
+function updateCartCount() {
+    const cartCount = cart.length;
+    document.getElementById('cart-count').textContent = cartCount;
+}
+
+// Function to display products on the page
+function displayProducts() {
+    const productList = document.getElementById('product-list');
+    productList.innerHTML = ''; // Clear the list before rendering
+    products.forEach(product => {
+        const productCard = `
+            <div class="col-md-4">
+                <div class="card product-card">
+                    <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${product.name}</h5>
+                        <p class="card-text">${product.description}</p>
+                        <p class="card-text">$${product.price.toFixed(2)}</p>
+                        <button class="btn btn-primary add-to-cart" data-id="${product.id}">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        productList.innerHTML += productCard;
+    });
+
+    // Attach event listeners to "Add to Cart" buttons
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const productId = parseInt(e.target.getAttribute('data-id'));
+            addToCart(productId);
+        });
+    });
+}
+
+// Function to add product to cart
+function addToCart(productId) {
+    const product = products.find(p => p.id === productId);
+    cart.push(product);
+    localStorage.setItem('cart', JSON.stringify(cart)); // Save cart to local storage
+    updateCartCount();
+}
+
+// Function to display cart items in the modal
+function displayCart() {
+    const cartItemsList = document.getElementById('cart-items-list');
+    const cartTotal = document.getElementById('cart-total');
+    cartItemsList.innerHTML = ''; // Clear the list before rendering
+    let totalPrice = 0;
+
+    cart.forEach(item => {
+        const cartItem = `
+            <li class="list-group-item d-flex justify-content-between">
+                <span>${item.name} - $${item.price.toFixed(2)}</span>
+                <button class="btn btn-danger btn-sm remove-from-cart" data-id="${item.id}">Remove</button>
+            </li>
+        `;
+        cartItemsList.innerHTML += cartItem;
+        totalPrice += item.price;
+    });
+
+    cartTotal.textContent = `Total: $${totalPrice.toFixed(2)}`;
+
+    // Attach event listeners to "Remove" buttons
+    const removeButtons = document.querySelectorAll('.remove-from-cart');
+    removeButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const productId = parseInt(e.target.getAttribute('data-id'));
+            removeFromCart(productId);
+        });
+    });
+}
+
+// Function to remove product from cart
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    localStorage.setItem('cart', JSON.stringify(cart)); // Update cart in local storage
+    displayCart(); // Refresh the cart display
+    updateCartCount(); // Refresh cart count
+}
+
+// Handle Checkout
+document.getElementById('checkout-btn').addEventListener('click', () => {
+    alert("Checkout functionality is not implemented in this demo.");
+});
+
+// Event listener for "View Cart" button
+document.getElementById('view-cart-btn').addEventListener('click', () => {
+    const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+    cartModal.show();
+    displayCart(); // Update cart view when modal is shown
+});
+
+// Initial page setup
+displayProducts();
+updateCartCount();
+
